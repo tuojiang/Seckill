@@ -1,5 +1,6 @@
 package com.chandler.seckill.controller;
 
+import com.chandler.seckill.domain.MiaoshaOrder;
 import com.chandler.seckill.domain.OrderInfo;
 import com.chandler.seckill.domain.SeckillUser;
 import com.chandler.seckill.redis.RedisService;
@@ -29,7 +30,7 @@ public class MiaoshaController {
     GoodsService goodsService;
 
     @Autowired
-    OrderService orederService;
+    OrderService orderService;
 
     @Autowired
     SeckillUserService userService;
@@ -41,25 +42,28 @@ public class MiaoshaController {
     MiaoshaService miaoshaService;
 
     @RequestMapping("/do_miaosha")
-    public String list(Model model, SeckillUser user, @RequestParam("goodsId")long goodsId){
-        model.addAttribute("user",user);
-        if (model == null) {
+    public String list(Model model, SeckillUser user, @RequestParam("goodsId") long goodsId) {
+        model.addAttribute("user", user);
+        if (user == null) {
             return "login";
         }
         //判断库存
         GoodsVo goods = goodsService.getGoodsVoByGoodsId(goodsId);
         int stock = goods.getStockCount();
-        if (stock<=0){
+        if (stock <= 0) {
             model.addAttribute("errmsg", CodeMsg.MIAO_SHA_OVER.getMsg());
             return "miaosha_fail";
         }
         //是否秒杀完成
-        MiaoshaService order = orederService.getMiaoshaOrderByUserIdGoodsId(user.getId(),goodsId);
+        /*MiaoshaOrder order = orderService.getMiaoshaOrderByUserIdGoodsId(user.getId(), goodsId);
         if (order != null) {
             model.addAttribute("errmsg",CodeMsg.REPEATE_MIAOSHA.getMsg());
             return "miaosha_fail";
-        }
+        }*/
         //减库存，下订单 写入秒杀订单
-        OrderInfo orderInfo = miaoshaService.miaosha(user,goods);
+        OrderInfo orderInfo = miaoshaService.miaosha(user, goods);
+        model.addAttribute("orderInfo", orderInfo);
+        model.addAttribute("goods", goods);
+        return "order_detail";
     }
 }

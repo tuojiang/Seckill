@@ -26,6 +26,6 @@ public class MiaoshaService {
     public OrderInfo miaosha(SeckillUser user, GoodsVo goods) {
         //减库存，下订单 写入秒杀订单
         goodsService.reduceStock(goods);
-        return orderService.createOder();
+        return orderService.createOder(user,goods);
     }
 }
