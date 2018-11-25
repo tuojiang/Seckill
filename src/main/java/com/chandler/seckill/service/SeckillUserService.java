@@ -65,6 +65,34 @@ public class SeckillUserService {
     }
 
     public SeckillUser getById(long id) {
-        return seckillUserDao.getById(id);
+        //取缓存
+        SeckillUser user = redisService.get(SeckillUserKey.getById,""+id,SeckillUser.class);
+        if (user != null) {
+            return user;
+        }
+        //从数据库取
+        user = seckillUserDao.getById(id);
+        if (user != null) {
+            redisService.set(SeckillUserKey.getById,""+id,user);
+        }
+        return user;
+    }
+
+    public boolean updatePassword(String token, long id, String formPass) {
+        //取user
+        SeckillUser user = getById(id);
+        if (user == null) {
+            throw new GlobalException(CodeMsg.MOBILE_NOT_EXIST);
+        }
+        //更新数据库
+        SeckillUser toUpdate = new SeckillUser();
+        toUpdate.setId(id);
+        toUpdate.setPassword(MD5Util.formPassToDBPass(formPass,user.getSalt()));
+        seckillUserDao.update(toUpdate);
+        //处理缓存
+        redisService.delete(SeckillUserKey.getById,""+id);
+        user.setPassword(toUpdate.getPassword());
+        redisService.set(SeckillUserKey.token,token,user);
+        return true;
     }
 }

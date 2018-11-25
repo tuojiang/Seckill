@@ -159,4 +159,21 @@ public class RedisService {
             jedis.close();
         }
     }
+
+    /**
+     * 删除 key 值
+     * @param prefix
+     * @param key
+     */
+    public boolean delete(SeckillUserKey prefix, String key) {
+        Jedis jedis = null;
+        try {
+            jedis = jedisPool.getResource();
+            String realKey = prefix.getPrefix() + key;
+            long ret = jedis.del(realKey);
+            return ret>0;
+        } finally {
+            returnToPool(jedis);
+        }
+    }
 }
