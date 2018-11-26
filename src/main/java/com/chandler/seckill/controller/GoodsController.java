@@ -3,7 +3,9 @@ package com.chandler.seckill.controller;
 import com.chandler.seckill.domain.SeckillUser;
 import com.chandler.seckill.redis.GoodsKey;
 import com.chandler.seckill.redis.RedisService;
+import com.chandler.seckill.result.Result;
 import com.chandler.seckill.service.GoodsService;
+import com.chandler.seckill.vo.GoodsDetailVo;
 import com.chandler.seckill.vo.GoodsVo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,12 +116,11 @@ public class GoodsController {
         html = thymeleafViewResolver.getTemplateEngine().process("goods_detail",ctx);
         return html;
     }
-    @RequestMapping("/to_detail/{goodsId}")
-    public String detail(Model model, SeckillUser user, @PathVariable("goodsId") long goodsId) {
-        model.addAttribute("user", user);
+    @RequestMapping(value = "/to_detail/{goodsId}")
+    @ResponseBody
+    public Result<GoodsDetailVo> detail(HttpServletRequest request,HttpServletResponse response,Model model, SeckillUser user,
+                                        @PathVariable("goodsId") long goodsId) {
         GoodsVo goods = goodsService.getGoodsVoByGoodsId(goodsId);
-        model.addAttribute("goods", goods);
-
         long startAt = goods.getStartDate().getTime();
         long endAt = goods.getEndDate().getTime();
         long now = System.currentTimeMillis();
@@ -136,8 +137,11 @@ public class GoodsController {
             miaoshaStatus = 1;
             remainSeconds = 0;
         }
-        model.addAttribute("miaoshaStatus", miaoshaStatus);
-        model.addAttribute("remainSeconds", remainSeconds);
-        return "goods_detail";
+        GoodsDetailVo vo = new GoodsDetailVo();
+        vo.setGoods(goods);
+        vo.setUser(user);
+        vo.setMiaoshaStatus(miaoshaStatus);
+        vo.setRemainSeconds(remainSeconds);
+        return Result.success(vo);
     }
 }
