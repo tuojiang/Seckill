@@ -6,6 +6,9 @@ import com.chandler.seckill.domain.SeckillUser;
 import com.chandler.seckill.redis.MiaoshaKey;
 import com.chandler.seckill.redis.RedisService;
 import com.chandler.seckill.redis.SeckillUserKey;
+import com.chandler.seckill.result.CodeMsg;
+import com.chandler.seckill.util.MD5Util;
+import com.chandler.seckill.util.UUIDUtil;
 import com.chandler.seckill.vo.GoodsVo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,5 +104,22 @@ public class MiaoshaService {
     private boolean getGoodsOver(long goodId) {
         return redisService.exists(MiaoshaKey.isGoodsOver,""+goodId);
 
+    }
+
+    public String getMiaoshaPath(SeckillUser user, long goodsId) {
+        if (user == null || goodsId <=0){
+            return null;
+        }
+        String str = MD5Util.md5(UUIDUtil.uuid()+"123456");
+        redisService.set(MiaoshaKey.getMiaoshaPath,""+user.getId()+"_"+goodsId,str);
+        return str;
+    }
+
+    public boolean checkPath(SeckillUser user,long goodsId, String path) {
+        if (user == null || path == null){
+            return false;
+        }
+        String pathOld = redisService.get(MiaoshaKey.getMiaoshaPath,""+user.getId()+"_"+goodsId,String.class);
+        return path.equals(pathOld);
     }
 }
