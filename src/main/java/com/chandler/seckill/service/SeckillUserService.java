@@ -9,6 +9,7 @@ import com.chandler.seckill.result.CodeMsg;
 import com.chandler.seckill.util.MD5Util;
 import com.chandler.seckill.util.UUIDUtil;
 import com.chandler.seckill.vo.LoginVo;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -54,6 +55,24 @@ public class SeckillUserService {
         String token = UUIDUtil.uuid();
         addCookie(response,token,user);
         return true;
+    }
+
+    /**
+     * 获取Token信息
+     * @param response
+     * @param token
+     * @return
+     */
+    public SeckillUser getByToken(HttpServletResponse response, String token) {
+        if (StringUtils.isEmpty(token)){
+            return null;
+        }
+        SeckillUser user = redisService.get(SeckillUserKey.token,token,SeckillUser.class);
+        //延长有效期
+        if (user != null) {
+            addCookie(response,token,user);
+        }
+        return user;
     }
 
     private void addCookie(HttpServletResponse response, String token, SeckillUser user) {

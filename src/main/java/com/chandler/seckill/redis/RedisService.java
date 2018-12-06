@@ -170,7 +170,7 @@ public class RedisService {
      * @param prefix
      * @param key
      */
-    public boolean delete(SeckillUserKey prefix, String key) {
+    public boolean delete(KeyPrefix prefix, String key) {
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();
